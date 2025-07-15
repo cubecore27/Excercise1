@@ -9,6 +9,7 @@ import Style2 from "../components/Workflow/nodes/Style2";
 import Style3 from "../components/Workflow/nodes/Style3";
 import testpage from "../components/Workflow/nodes/test";
 import TestPage from "../components/Workflow/nodes/test";
+import TicketDetail from "../components/tickets/TicketDetail";
 
 
 export default function MainRoute() {
@@ -26,6 +27,7 @@ export default function MainRoute() {
         <Route path="/style2" element={<Style2/>} />
         <Route path="/style3" element={<Style3/>} />
         <Route path="/test" element={<TestPage/>}/>
+        <Route path="/ticket" element={<TicketDetail />} />
     </Routes>
   );
 }

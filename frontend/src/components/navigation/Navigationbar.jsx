@@ -4,6 +4,7 @@ import styles from "./admin-nav.module.css";
 // react
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import TicketDetail from "../tickets/TicketDetail";
 
 export default function AdminNav() {
   const location = useLocation();
@@ -43,6 +44,7 @@ export default function AdminNav() {
     setOpenNotifModal(false);
   };
 
+
   return (
     <>
       <nav className={styles.navBar}>
@@ -74,6 +76,17 @@ export default function AdminNav() {
           >
             Dashboard
           </NavLink>
+
+          <NavLink
+            to="/ticket"
+            end
+            className={({ isActive }) =>
+              isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+            }
+          >
+            ticket
+          </NavLink>
+
           <NavLink
             to="/workflow"
             end
@@ -83,33 +96,39 @@ export default function AdminNav() {
           >
             Workflow
           </NavLink>
-          <NavLink
-            to="/style1"
-            end
-            className={({ isActive }) =>
-              isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
-            }
-          >
-            Style 1
-          </NavLink>
-          <NavLink
-            to="/style2"
-            end
-            className={({ isActive }) =>
-              isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
-            }
-          >
-            Style 2
-          </NavLink>
-          <NavLink
-            to="/style3"
-            end
-            className={({ isActive }) =>
-              isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
-            }
-          >
-            Style 3
-          </NavLink>
+          <div className={styles.dropdown}>
+          <span className={styles.navLink}>Styles ▾</span>
+          <div className={styles.dropdownContent}>
+            <NavLink
+              to="/style1"
+              end
+              className={({ isActive }) =>
+                isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+              }
+            >
+              Style 1
+            </NavLink>
+            <NavLink
+              to="/style2"
+              end
+              className={({ isActive }) =>
+                isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+              }
+            >
+              Style 2
+            </NavLink>
+            <NavLink
+              to="/style3"
+              end
+              className={({ isActive }) =>
+                isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+              }
+            >
+              Style 3
+            </NavLink>
+          </div>
+        </div>
+
         </div>
 
         <div
