@@ -42,6 +42,9 @@ INSTALLED_APPS = [
 
     # apps
     'posts',
+    'workflow',
+    'tickets',
+    'instances',
 ]
 
 MIDDLEWARE = [

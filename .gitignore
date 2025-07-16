@@ -1,0 +1,68 @@
+# === PYTHON ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# === DJANGO ===
+*.log
+local_settings.py
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+static_root/
+*.pot
+*.mo
+
+# === ENVIRONMENT FILES ===
+.env
+.env.*
+!.env.example
+
+# === VENV / PIPENV / POETRY ===
+venv/
+ENV/
+env/
+.venv/
+Pipfile.lock
+poetry.lock
+
+# === IDEs / EDITORS ===
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# === OS FILES ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === TEST / COVERAGE / CI ===
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+test-results/
+
+# === MISC ===
+*.bak
+*.swp
+*.tmp
+*.orig
+*.~undo-tree~
