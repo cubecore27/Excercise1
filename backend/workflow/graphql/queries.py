@@ -4,19 +4,30 @@ from workflow.graphql.types import WorkflowType, RoleType, StepType, TransitionT
 
 class Query(graphene.ObjectType):
     all_workflows = graphene.List(WorkflowType)
-    all_roles = graphene.List(RoleType)
-    all_steps = graphene.List(StepType)
-    all_transitions = graphene.List(TransitionType)
+    workflow = graphene.Field(WorkflowType, 
+                              id=graphene.ID(required=False),
+                              workflow_id=graphene.UUID(required=False),
+                              )
+    roles = graphene.List(RoleType)
+    steps = graphene.List(StepType)
+    transitions = graphene.List(TransitionType)
+
+    def resolve_workflow(self, info, **kwargs):
+        try:
+            return Workflows.objects.get(**kwargs)
+        except Workflows.DoesNotExist:
+            return None
+
 
     def resolve_all_workflows(root, info):
         return Workflows.objects.all()
 
-    def resolve_all_roles(root, info):
+    def resolve_roles(root, info):
         return Roles.objects.all()
 
-    def resolve_all_steps(root, info):
+    def resolve_steps(root, info):
         return Steps.objects.all()
 
-    def resolve_all_transitions(root, info):
+    def resolve_transitions(root, info):
         return Transitions.objects.all()
     

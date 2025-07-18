@@ -1,35 +1,44 @@
 import graphene
 from graphene_django import DjangoObjectType
 from workflow.models import Workflows, Roles, Steps, Transitions
-
-class StepInWorkflowType(DjangoObjectType):
-    class Meta:
-        model = Steps
-        fields = ("id", "step_id", "role_id", "instruction")
-
-class WorkflowType(DjangoObjectType):
-    steps = graphene.List(StepInWorkflowType)  # custom field
-
-    class Meta:
-        model = Workflows
-        fields = ("id", "workflow_id", "category", "sub_category", "department", "status", "is_published")
-
-    def resolve_steps(self, info):
-        return self.steps_set.all()
+from django.db.models import Q
 
 
 class RoleType(DjangoObjectType):
     class Meta:
         model = Roles
-        fields = ("id","role_id")
+        exclude = ("steps_set","","")  # Add fields to exclude if needed later
+
 
 class StepType(DjangoObjectType):
     class Meta:
         model = Steps
-        fields = "__all__"
+        exclude = ("workflow", "step_instances_set", "transitions_from", "transitions_to")
 
 
 class TransitionType(DjangoObjectType):
+    from_step = graphene.Field(lambda: StepType)
+    to_step = graphene.Field(lambda: StepType)
+
     class Meta:
         model = Transitions
-        fields = "__all__"
+        exclude = ("step_instances_set","instance_logs_set")  # or leave empty if none
+
+
+class WorkflowType(DjangoObjectType):
+    steps = graphene.List(StepType)
+    transitions = graphene.List(TransitionType)
+
+    class Meta:
+        model = Workflows
+        exclude = ("tickets_set", "steps_set", "instance_logs_set")  # assuming reverse relations
+
+    def resolve_steps(self, info):
+        return Steps.objects.filter(workflow=self.workflow_id)
+
+    def resolve_transitions(self, info):
+        step_ids = Steps.objects.filter(workflow=self.workflow_id).values_list("step_id", flat=True)
+        return Transitions.objects.filter(
+            Q(from_step__step_id__in=step_ids) |
+            Q(to_step__step_id__in=step_ids)
+        ).distinct()

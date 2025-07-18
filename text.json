@@ -1,0 +1,80 @@
+{
+    "data": {
+      "workflow": {
+        "id": "1",
+        "category": "Finance",
+        "steps": [
+          {
+            "id": "1",
+            "instruction": "Steps 1: instruction for role 10"
+          },
+          {
+            "id": "2",
+            "instruction": "Steps 2: instruction for role 8"
+          },
+          {
+            "id": "3",
+            "instruction": "Steps 3: instruction for role 8"
+          },
+          {
+            "id": "4",
+            "instruction": "Steps 4: instruction for role 4"
+          },
+          {
+            "id": "5",
+            "instruction": "Steps 5: instruction for role 5"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "4",
+            "name": "Transitions 4",
+            "fromStep": {
+              "id": "4",
+              "instruction": "Steps 4: instruction for role 4"
+            },
+            "toStep": {
+              "id": "5",
+              "instruction": "Steps 5: instruction for role 5"
+            }
+          },
+          {
+            "id": "1",
+            "name": "Transitions 1",
+            "fromStep": {
+              "id": "1",
+              "instruction": "Steps 1: instruction for role 10"
+            },
+            "toStep": {
+              "id": "2",
+              "instruction": "Steps 2: instruction for role 8"
+            }
+          },
+          {
+            "id": "3",
+            "name": "Transitions 3",
+            "fromStep": {
+              "id": "3",
+              "instruction": "Steps 3: instruction for role 8"
+            },
+            "toStep": {
+              "id": "4",
+              "instruction": "Steps 4: instruction for role 4"
+            }
+          },
+          {
+            "id": "2",
+            "name": "Transitions 2",
+            "fromStep": {
+              "id": "2",
+              "instruction": "Steps 2: instruction for role 8"
+            },
+            "toStep": {
+              "id": "3",
+              "instruction": "Steps 3: instruction for role 8"
+            }
+          }
+        ]
+      }
+    }
+  }

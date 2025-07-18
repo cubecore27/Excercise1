@@ -17,7 +17,7 @@ class Workflows(models.Model):
 class Roles(models.Model):
     id = models.BigAutoField(primary_key=True)
     role_id = models.UUIDField(default=uuid.uuid4, unique=True)
-    system_id = models.UUIDField()
+    # name = models.CharField(max_length=255)
 
     class Meta:
         db_table = "roles"
@@ -26,9 +26,10 @@ class Roles(models.Model):
 class Steps(models.Model):
     id = models.BigAutoField(primary_key=True)
     step_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    instruction = models.TextField(null=True, blank=True)
     workflow = models.ForeignKey(Workflows, to_field="workflow_id", on_delete=models.CASCADE)
     role_id = models.ForeignKey(Roles, to_field="role_id", on_delete=models.CASCADE)
-    instruction = models.TextField(null=True, blank=True)
+
 
     class Meta:
         db_table = "steps"
