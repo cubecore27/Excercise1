@@ -1,82 +1,96 @@
 import graphene
-from workflow.models import Workflows, Roles, Steps, Transitions
-from workflow.graphql.types import WorkflowType, RoleType, StepType, TransitionType
 import uuid
+from django.db import transaction
+from django.db.models import Q
+from workflow.models import Workflows, Roles, Steps, Transitions
+from workflow.graphql.types import WorkflowType
 
-class CreateWorkflow(graphene.Mutation):
+
+# --- Input Object Types ---
+
+class StepInput(graphene.InputObjectType):
+    step_id = graphene.String(required=True)
+    instruction = graphene.String(required=True)
+    role_id = graphene.UUID(required=True)
+
+class TransitionInput(graphene.InputObjectType):
+    transition_id = graphene.String(required=True)
+    name = graphene.String(required=True)
+    from_step_id = graphene.String(required=True)
+    to_step_id = graphene.String(required=True)
+
+class WorkflowInput(graphene.InputObjectType):
+    workflow_id = graphene.String(required=True)
+    category = graphene.String()
+    sub_category = graphene.String()
+    department = graphene.String()
+    status = graphene.String()
+    is_published = graphene.Boolean()
+    steps = graphene.List(StepInput)
+    transitions = graphene.List(TransitionInput)
+
+
+# --- Create or Update Workflow Mutation ---
+
+class CreateOrUpdateWorkflow(graphene.Mutation):
     class Arguments:
-        category = graphene.String(required=True)
-        sub_category = graphene.String(required=True)
-        department = graphene.String(required=True)
-        is_published = graphene.Boolean()
-        status = graphene.String(required=True)
+        input = WorkflowInput(required=True)
 
     workflow = graphene.Field(WorkflowType)
 
-    def mutate(self, info, category, sub_category, department, status, is_published=None):
-        workflow = Workflows.objects.create(
-            workflow_id=uuid.uuid4(),
-            category=category,
-            sub_category=sub_category,
-            department=department,
-            status=status,
-            is_published=is_published,
+    @transaction.atomic
+    def mutate(self, info, input):
+        # Get or create workflow
+        workflow, _ = Workflows.objects.update_or_create(
+            workflow_id=input.workflow_id,
+            defaults={
+                "category": input.category,
+                "sub_category": input.sub_category,
+                "department": input.department,
+                "status": input.status,
+                "is_published": input.is_published,
+            }
         )
-        return CreateWorkflow(workflow=workflow)
+
+        # Sync Steps
+        step_ids = []
+        for step_input in input.steps or []:
+            role = Roles.objects.get(role_id=step_input.role_id)
+            step_obj, _ = Steps.objects.update_or_create(
+                step_id=step_input.step_id,
+                defaults={
+                    "workflow": workflow,
+                    "instruction": step_input.instruction,
+                    "role_id": role,
+                }
+            )
+            step_ids.append(step_obj.step_id)
+
+        Steps.objects.filter(workflow=workflow).exclude(step_id__in=step_ids).delete()
+
+        # Sync Transitions
+        transition_ids = []
+        for t_input in input.transitions or []:
+            from_step = Steps.objects.get(step_id=t_input.from_step_id)
+            to_step = Steps.objects.get(step_id=t_input.to_step_id)
+            trans_obj, _ = Transitions.objects.update_or_create(
+                transition_id=t_input.transition_id,
+                defaults={
+                    "from_step": from_step,
+                    "to_step": to_step,
+                    "name": t_input.name
+                }
+            )
+            transition_ids.append(trans_obj.transition_id)
+
+        Transitions.objects.filter(
+            Q(from_step__workflow=workflow) | Q(to_step__workflow=workflow)
+        ).exclude(transition_id__in=transition_ids).delete()
+
+        return CreateOrUpdateWorkflow(workflow=workflow)
 
 
-class CreateRole(graphene.Mutation):
-    class Arguments:
-        system_id = graphene.UUID(required=True)
-
-    role = graphene.Field(RoleType)
-
-    def mutate(self, info, system_id):
-        role = Roles.objects.create(
-            role_id=uuid.uuid4(),
-            system_id=system_id
-        )
-        return CreateRole(role=role)
-
-
-class CreateStep(graphene.Mutation):
-    class Arguments:
-        workflow_id = graphene.UUID(required=True)
-        role_id = graphene.UUID(required=True)
-        instruction = graphene.String()
-
-    step = graphene.Field(StepType)
-
-    def mutate(self, info, workflow_id, role_id, instruction=None):
-        step = Steps.objects.create(
-            step_id=uuid.uuid4(),
-            workflow_id=workflow_id,
-            role_id=role_id,
-            instruction=instruction
-        )
-        return CreateStep(step=step)
-
-
-class CreateTransition(graphene.Mutation):
-    class Arguments:
-        from_step_id = graphene.UUID(required=True)
-        to_step_id = graphene.UUID(required=True)
-        name = graphene.String(required=True)
-
-    transition = graphene.Field(TransitionType)
-
-    def mutate(self, info, from_step_id, to_step_id, name):
-        transition = Transitions.objects.create(
-            transition_id=uuid.uuid4(),
-            from_step_id=from_step_id,
-            to_step_id=to_step_id,
-            name=name
-        )
-        return CreateTransition(transition=transition)
-
+# --- Main Mutation Class ---
 
 class Mutation(graphene.ObjectType):
-    create_workflow = CreateWorkflow.Field()
-    create_role = CreateRole.Field()
-    create_step = CreateStep.Field()
-    create_transition = CreateTransition.Field()
+    create_or_update_workflow = CreateOrUpdateWorkflow.Field()
